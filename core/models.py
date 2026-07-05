@@ -14,12 +14,12 @@ class Severity(Enum):
     CRITICAL = "CRITICAL"
 
 
-
 class Evidence:
     def __init__(self, request, response, parameters):
         self.request = request
         self.response = response
         self.parameters = parameters
+
 
 from enum import Enum
 
@@ -32,7 +32,7 @@ class Finding:
         endpoint: str,
         evidence: Evidence,
         description: str,
-        impact: str
+        impact: str,
     ):
         self.name = name
         self.severity = severity
@@ -49,6 +49,7 @@ class HttpResponse:
     headers: Dict[str, str]
     time_ms: int
     path: str
+
 
 class Method(Enum):
     GET = "GET"
@@ -84,8 +85,9 @@ class HttpClient:
             body=resp.text,
             headers=dict(resp.headers),
             time_ms=time_ms,
-            path=url
+            path=url,
         )
+
 
 @dataclass(frozen=True)
 class RawFinding:

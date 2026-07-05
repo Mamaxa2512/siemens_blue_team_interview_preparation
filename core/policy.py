@@ -11,11 +11,10 @@ class PolicyEngine:
 
     def enrich(self, raw_finding: RawFinding) -> Finding:
         return Finding(
-            name = self.kb_data[raw_finding.vuln_id]["name"],
-            severity= Severity(self.kb_data[raw_finding.vuln_id]["severity"]),
-            endpoint = raw_finding.endpoint,
-            evidence= raw_finding.evidence,
-            description = self.kb_data[raw_finding.vuln_id]["description"],
-            impact= self.kb_data[raw_finding.vuln_id]["impact"]
+            name=self.kb_data[raw_finding.vuln_id]["name"],
+            severity=Severity(self.kb_data[raw_finding.vuln_id]["severity"]),
+            endpoint=raw_finding.endpoint,
+            evidence=raw_finding.evidence,
+            description=self.kb_data[raw_finding.vuln_id]["description"],
+            impact=self.kb_data[raw_finding.vuln_id]["impact"],
         )
-

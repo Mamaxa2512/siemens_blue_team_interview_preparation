@@ -8,7 +8,9 @@ from reports.reporter import MarkdownReporter
 
 def main():
     # 1. Ініціалізація базових компонентів
-    client = HttpClient(base_url="http://localhost:3000/#/")  # Можеш вказати будь-який тестовий URL
+    client = HttpClient(
+        base_url="http://localhost:3000/#/"
+    )  # Можеш вказати будь-який тестовий URL
     policy = PolicyEngine("knowledge_base/vulnerabilities.json")
 
     # 2. Реєстрація чеків
@@ -33,5 +35,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
