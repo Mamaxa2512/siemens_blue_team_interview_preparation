@@ -47,5 +47,19 @@
     "description": "The application does not define a Content Security Policy (CSP).",
     "impact": "Increases the risk and potential impact of Cross-Site Scripting (XSS) and other data injection attacks.",
     "remediation": "Implement a robust Content-Security-Policy header to restrict resource loading to trusted sources."
+  },
+  "INFO-DISC-SERVER-HEADER": {
+    "name": "Information Disclosure via Server Header",
+    "severity": "LOW",
+    "description": "The web server exposes its identity and version through the 'Server' HTTP response header.",
+    "impact": "Attackers can use the server version to search for known vulnerabilities and tailor their attacks against the specific technology stack.",
+    "remediation": "Configure the web server to hide or obfuscate the 'Server' header (e.g., set 'ServerTokens Prod' or 'server_tokens off')."
+  },
+  "INFO-DISC-X-POWERED-BY": {
+    "name": "X-Powered-By Information Disclosure",
+    "severity": "LOW",
+    "description": "The application exposes underlying framework or technology details via the 'X-Powered-By' HTTP response header.",
+    "impact": "Revealing the backend technology assists attackers in identifying the application's architecture and potential framework-specific flaws.",
+    "remediation": "Remove the 'X-Powered-By' header in the application framework or web server configuration."
   }
 }

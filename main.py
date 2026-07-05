@@ -1,3 +1,4 @@
+from checks.disclosure import InformationDisclosureCheck
 from core.models import HttpClient
 from core.policy import PolicyEngine
 from core.scanner import Scanner
@@ -11,7 +12,7 @@ def main():
     policy = PolicyEngine("knowledge_base/vulnerabilities.json")
 
     # 2. Реєстрація чеків
-    passive_checks = [SecurityHeadersCheck()]
+    passive_checks = [SecurityHeadersCheck(), InformationDisclosureCheck()]
 
     # 3. Створення та запуск сканера
     scanner = Scanner(client, policy, passive_checks)
