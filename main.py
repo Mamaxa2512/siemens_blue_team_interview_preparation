@@ -1,5 +1,6 @@
 from checks.disclosure import InformationDisclosureCheck
 from checks.discovery import Discovery
+from checks.sqli import SQLiScanner
 from core.models import HttpClient
 from core.policy import PolicyEngine
 from core.scanner import Scanner
@@ -16,10 +17,15 @@ def main():
 
     # 2. Реєстрація чеків
     passive_checks = [SecurityHeadersCheck(), InformationDisclosureCheck()]
-    active_checks = [Discovery()]
+    active_checks = [Discovery(), SQLiScanner()]
 
     # 3. Створення та запуск сканера
-    scanner = Scanner(http_client= client, policy_engine= policy,passive_checks =  passive_checks, active_checks = active_checks)
+    scanner = Scanner(
+        http_client=client,
+        policy_engine=policy,
+        passive_checks=passive_checks,
+        active_checks=active_checks,
+    )
     results = scanner.run(target_url="/")  # Робимо запит в корінь
 
     # 4. Print results

@@ -27,23 +27,28 @@ class Scanner:
                 result = check.execute(response)
                 raw_findings.extend(result)
             except Exception as e:
-                logging.error(f"Перевірка {check.__class__.__name__} впала з помилкою: {e}")
+                logging.error(
+                    f"Перевірка {check.__class__.__name__} впала з помилкою: {e}"
+                )
 
         for finding in raw_findings:
             enriched_findings.append(self.policy_engine.enrich(finding))
 
         return enriched_findings
 
-
     def run_active(self, target_url: str) -> List[Finding]:
         raw_findings: List[RawFinding] = []
         enriched_findings: List[Finding] = []
         for check in self.active_checks:
             try:
-                result = check.execute(http_client=self.http_client, target_url=target_url)
+                result = check.execute(
+                    http_client=self.http_client, target_url=target_url
+                )
                 raw_findings.extend(result)
             except Exception as e:
-                logging.error(f"Перевірка {check.__class__.__name__} впала з помилкою: {e}")
+                logging.error(
+                    f"Перевірка {check.__class__.__name__} впала з помилкою: {e}"
+                )
 
         for finding in raw_findings:
             enriched_findings.append(self.policy_engine.enrich(finding))
