@@ -86,3 +86,9 @@ class HttpClient:
             time_ms=time_ms,
             path=url
         )
+
+@dataclass(frozen=True)
+class RawFinding:
+    vuln_id: str
+    endpoint: str
+    evidence: Evidence

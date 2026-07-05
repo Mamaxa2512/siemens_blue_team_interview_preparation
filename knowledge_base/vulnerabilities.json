@@ -1,0 +1,51 @@
+{
+  "SEC-HDR-HSTS-MISSING": {
+    "name": "Missing Strict-Transport-Security Header",
+    "severity": "MEDIUM",
+    "description": "The application does not enforce HSTS.",
+    "impact": "Users are vulnerable to Man-in-the-Middle attacks.",
+    "remediation": "Add the Strict-Transport-Security header to all responses."
+  },
+  "SEC-HDR-HSTS-MISCONF": {
+    "name": "Misconfigured Strict-Transport-Security Header",
+    "severity": "MEDIUM",
+    "description": "HSTS is disabled by setting max-age to 0 or has other misconfigurations.",
+    "impact": "Users are vulnerable to Man-in-the-Middle attacks.",
+    "remediation": "Set max-age to a suitable value (e.g., 31536000) and consider includeSubDomains."
+  },
+  "SEC-HDR-XFO-MISSING": {
+    "name": "Missing X-Frame-Options Header",
+    "severity": "MEDIUM",
+    "description": "The application does not use the X-Frame-Options header.",
+    "impact": "The application is vulnerable to Clickjacking (UI redressing) attacks.",
+    "remediation": "Implement the X-Frame-Options header with a value of DENY or SAMEORIGIN."
+  },
+  "SEC-HDR-XFO-MISCONF": {
+    "name": "Misconfigured X-Frame-Options Header",
+    "severity": "LOW",
+    "description": "X-Frame-Options is present but not set to DENY or SAMEORIGIN.",
+    "impact": "Potential clickjacking vulnerability.",
+    "remediation": "Set X-Frame-Options strictly to DENY or SAMEORIGIN."
+  },
+  "SEC-HDR-XCTO-MISSING": {
+    "name": "Missing X-Content-Type-Options Header",
+    "severity": "LOW",
+    "description": "The application is missing the X-Content-Type-Options header.",
+    "impact": "Browsers may perform MIME-sniffing, potentially leading to Cross-Site Scripting (XSS) if content is misinterpreted.",
+    "remediation": "Add the X-Content-Type-Options header with the value 'nosniff' to all responses."
+  },
+  "SEC-HDR-XCTO-MISCONF": {
+    "name": "Misconfigured X-Content-Type-Options Header",
+    "severity": "LOW",
+    "description": "X-Content-Type-Options is present but not set to 'nosniff'.",
+    "impact": "Browsers may execute files as unexpected types.",
+    "remediation": "Ensure X-Content-Type-Options is strictly set to 'nosniff'."
+  },
+  "SEC-HDR-CSP-MISSING": {
+    "name": "Missing Content-Security-Policy Header",
+    "severity": "MEDIUM",
+    "description": "The application does not define a Content Security Policy (CSP).",
+    "impact": "Increases the risk and potential impact of Cross-Site Scripting (XSS) and other data injection attacks.",
+    "remediation": "Implement a robust Content-Security-Policy header to restrict resource loading to trusted sources."
+  }
+}
