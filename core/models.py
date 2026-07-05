@@ -21,9 +21,6 @@ class Evidence:
         self.parameters = parameters
 
 
-from enum import Enum
-
-
 class Finding:
     def __init__(
         self,

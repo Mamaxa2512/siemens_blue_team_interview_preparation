@@ -30,7 +30,7 @@ def main():
     # 5. Generate Markdown report
     reporter = MarkdownReporter("report.md")
     reporter.generate(results)
-    print(f"\n[+] Report saved to report.md")
+    print("\n[+] Report saved to report.md")
 
 
 if __name__ == "__main__":

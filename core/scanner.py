@@ -1,7 +1,6 @@
-from enum import Enum
 from typing import Any, List
 
-from core.models import HttpClient, Finding, HttpResponse, Method, RawFinding
+from core.models import HttpClient, Finding, Method, RawFinding
 from core.policy import PolicyEngine
 
 

@@ -1,7 +1,7 @@
 import json
 
 
-from core.models import HttpResponse, Finding, RawFinding, Severity
+from core.models import Finding, RawFinding, Severity
 
 
 class PolicyEngine:

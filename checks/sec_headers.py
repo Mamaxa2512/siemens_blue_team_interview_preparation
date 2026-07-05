@@ -1,6 +1,6 @@
 from typing import List
 
-from core.models import Finding, Severity, Evidence, HttpResponse, RawFinding
+from core.models import Evidence, HttpResponse, RawFinding
 
 
 class SecurityHeadersCheck:
@@ -15,7 +15,7 @@ class SecurityHeadersCheck:
                     endpoint=response.path,
                     evidence=Evidence(
                         request=f"GET {response.path}",
-                        response=f"Header 'Strict-Transport-Security' is missing",
+                        response="Header 'Strict-Transport-Security' is missing",
                         parameters=["strict-transport-security"],
                     ),
                 )
