@@ -61,5 +61,12 @@
     "description": "The application exposes underlying framework or technology details via the 'X-Powered-By' HTTP response header.",
     "impact": "Revealing the backend technology assists attackers in identifying the application's architecture and potential framework-specific flaws.",
     "remediation": "Remove the 'X-Powered-By' header in the application framework or web server configuration."
+  },
+  "DISCOVERY-HIDDEN-DIR": {
+    "name": "Hidden Directory/File Discovered",
+    "severity": "MEDIUM",
+    "description": "A potentially sensitive file or directory was found that should not be publicly accessible.",
+    "impact": "Attackers can access sensitive data like configuration files, source code, or administrative interfaces.",
+    "remediation": "Restrict access to the directory/file using proper authentication or remove it from the web root."
   }
 }
