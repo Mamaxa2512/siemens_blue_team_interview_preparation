@@ -68,5 +68,12 @@
     "description": "A potentially sensitive file or directory was found that should not be publicly accessible.",
     "impact": "Attackers can access sensitive data like configuration files, source code, or administrative interfaces.",
     "remediation": "Restrict access to the directory/file using proper authentication or remove it from the web root."
+  },
+  "INJ-SQLI-ERROR-BASED": {
+    "name": "Error-Based SQL Injection",
+    "severity": "CRITICAL",
+    "description": "The application is vulnerable to Error-Based SQL Injection. It returns detailed database error messages in the HTTP response when unexpected SQL syntax is supplied.",
+    "impact": "Attackers can exploit this to extract sensitive data from the database, enumerate the database structure, or potentially compromise the underlying server.",
+    "remediation": "Implement parameterized queries (Prepared Statements) for all database interactions. Ensure detailed database error messages are disabled in production environments and generic error messages are returned instead."
   }
 }
