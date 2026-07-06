@@ -4,3 +4,8 @@ config.py
 __pycache__/
 *.pyc
 report.md
+debug_crawler.py
+debug_crawler_deep.py
+debug_mainjs.py
+test_regex.py
+test_regex2.py
