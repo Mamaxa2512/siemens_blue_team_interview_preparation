@@ -16,7 +16,8 @@ def main():
     )  # Можеш вказати будь-який тестовий URL
     policy = PolicyEngine("knowledge_base/vulnerabilities.json")
 
-    print(Crawler(target_url= client.base_url, http_client= client).crawl())
+    endpoints = Crawler(target_url= client.base_url, http_client= client).crawl()
+    endpoints.add("/")
 
     # 2. Реєстрація чеків
     passive_checks = [SecurityHeadersCheck(), InformationDisclosureCheck()]
@@ -29,18 +30,23 @@ def main():
         passive_checks=passive_checks,
         active_checks=active_checks,
     )
-    results = scanner.run(target_url="/")  # Робимо запит в корінь
+
+    all_results = []
+    for url in endpoints:
+        print(f"[*] Скануємо: {url}")
+        results = scanner.run(target_url=url)
+        all_results.extend(results)
 
     # 4. Print results
     print("====================================")
-    print(f"Vulnerabilities found: {len(results)}")
+    print(f"Vulnerabilities found: {len(all_results)}")
     print("====================================")
-    for r in results:
+    for r in all_results:
         print(f"[{r.severity.name}] {r.name} at {r.endpoint}")
 
     # 5. Generate Markdown report
     reporter = MarkdownReporter("report.md")
-    reporter.generate(results)
+    reporter.generate(all_results)
     print("\n[+] Report saved to report.md")
 
 

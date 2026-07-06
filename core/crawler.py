@@ -1,4 +1,5 @@
 import re
+import logging
 from core.models import HttpClient, Method
 
 
@@ -8,7 +9,24 @@ class Crawler:
         self.http_client = http_client
 
     def crawl(self):
-        findings = []
         response = self.http_client.request(path = self.target_url, method=Method.GET)
-        findings.extend(re.findall(r'href=[\'"]?([^\'" >]+)', response.body))
-        return set(findings)
+        links = re.findall(r'href=[\'"]?([^\'" >]+)', response.body)
+
+        js_files = [link for link in links if link.endswith(".js")]
+
+        endpoints = set()
+
+        base_target = self.target_url.split('#')[0]
+        if not base_target.endswith('/'):
+            base_target += '/'
+
+        for link in js_files:
+            js_path = base_target + link
+
+            try:
+                resp = self.http_client.request(path=js_path, method=Method.GET)
+                found_apis = re.findall(r'["\'](/api/[^\'" >]+|/rest/[^\'" >]+)["\']', resp.body)
+                endpoints.update(found_apis)
+            except Exception as e:
+                logging.error(f"Exception: {e}. \n While crawling {js_path}")
+        return endpoints
