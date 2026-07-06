@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 from core.models import HttpClient, Method, RawFinding, Evidence
 
@@ -85,24 +86,38 @@ class SQLiScanner:
             "Microsoft Access Driver"
         ]
 
+        # Juice shop uses SQLite and Sequelize
+        self.error_signatures.extend(["SQLITE_ERROR", "SequelizeDatabaseError"])
+        self.common_parameters = ["id", "q", "search", "query", "user", "email"]
+
     def execute(self, http_client: HttpClient, target_url: str):
         findings = []
-        for payload in self.payloads:
-            try:
-                response = http_client.request(Method.GET, path=target_url + "?id=" + payload)
-                found = next((signature for signature in self.error_signatures if signature in response.body), None)
-                if found:
-                    findings.append(RawFinding(
-                        vuln_id="INJ-SQLI-ERROR-BASED",
-                        endpoint= target_url + "?id=" + payload,
-                        evidence=Evidence(
-                            request=f"GET {target_url}?id={payload}",
-                            response=found,
-                            parameters=[],
-                        )
-                    ))
+        for param in self.common_parameters:
+            for payload in self.payloads:
+                try:
+                    parsed_url = urlparse(target_url)
+                    query_params = parse_qs(parsed_url.query)
+                    query_params[param] = [payload]
+                    new_query = urlencode(query_params, doseq=True)
+                    test_url = urlunparse(parsed_url._replace(query=new_query))
 
-            except Exception as e:
-                logging.error(f"Error: {e} on payload: {payload}")
+                    response = http_client.request(Method.GET, path=test_url)
+                    
+                    found = next((signature for signature in self.error_signatures if signature in response.body), None)
+                    if found:
+                        findings.append(RawFinding(
+                            vuln_id="INJ-SQLI-ERROR-BASED",
+                            endpoint= test_url,
+                            evidence=Evidence(
+                                request=f"GET {test_url}",
+                                response=found,
+                                parameters=[param],
+                            )
+                        ))
+                        # Stop fuzzing payloads for this parameter if we already found an injection
+                        break
+
+                except Exception as e:
+                    logging.error(f"Error: {e} on payload: {payload}")
 
         return findings

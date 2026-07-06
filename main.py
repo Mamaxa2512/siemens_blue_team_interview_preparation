@@ -19,6 +19,7 @@ def main():
     endpoints = Crawler(target_url= client.base_url, http_client= client).crawl()
     endpoints.add("/")
 
+
     # 2. Реєстрація чеків
     passive_checks = [SecurityHeadersCheck(), InformationDisclosureCheck()]
     active_checks = [Discovery(), SQLiScanner()]

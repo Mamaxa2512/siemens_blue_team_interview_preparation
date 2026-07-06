@@ -11,6 +11,8 @@ class Crawler:
     def crawl(self):
         response = self.http_client.request(path = self.target_url, method=Method.GET)
         links = re.findall(r'href=[\'"]?([^\'" >]+)', response.body)
+        scripts = re.findall(r'src=[\'"]?([^\'" >]+\.js)', response.body)
+        links.extend(scripts)
 
         js_files = [link for link in links if link.endswith(".js")]
 
@@ -25,7 +27,7 @@ class Crawler:
 
             try:
                 resp = self.http_client.request(path=js_path, method=Method.GET)
-                found_apis = re.findall(r'["\'](/api/[^\'" >]+|/rest/[^\'" >]+)["\']', resp.body)
+                found_apis = re.findall(r'(/api/[^\'" >`\?]+|/rest/[^\'" >`\?]+)', resp.body)
                 endpoints.update(found_apis)
             except Exception as e:
                 logging.error(f"Exception: {e}. \n While crawling {js_path}")

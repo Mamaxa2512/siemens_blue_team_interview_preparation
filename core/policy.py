@@ -10,11 +10,22 @@ class PolicyEngine:
             self.kb_data = json.load(file)
 
     def enrich(self, raw_finding: RawFinding) -> Finding:
-        return Finding(
-            name=self.kb_data[raw_finding.vuln_id]["name"],
-            severity=Severity(self.kb_data[raw_finding.vuln_id]["severity"]),
-            endpoint=raw_finding.endpoint,
-            evidence=raw_finding.evidence,
-            description=self.kb_data[raw_finding.vuln_id]["description"],
-            impact=self.kb_data[raw_finding.vuln_id]["impact"],
-        )
+        try:
+            vuln_data = self.kb_data[raw_finding.vuln_id]
+            return Finding(
+                name=vuln_data["name"],
+                severity=Severity(vuln_data["severity"]),
+                endpoint=raw_finding.endpoint,
+                evidence=raw_finding.evidence,
+                description=vuln_data["description"],
+                impact=vuln_data["impact"],
+            )
+        except KeyError:
+            return Finding(
+                name=f"Unknown Vulnerability ({raw_finding.vuln_id})",
+                severity=Severity.LOW,
+                endpoint=raw_finding.endpoint,
+                evidence=raw_finding.evidence,
+                description="This vulnerability is not present in the Knowledge Base.",
+                impact="Unknown",
+            )
