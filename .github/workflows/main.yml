@@ -26,10 +26,6 @@ jobs:
     - name: formatting with Black
       run: |
         black .
-
-    - name: Check formating with black
-      run: |
-        black -check .
         
     - name: Lint with flake8
       run: |

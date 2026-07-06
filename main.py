@@ -6,6 +6,7 @@ from core.policy import PolicyEngine
 from core.scanner import Scanner
 from checks.sec_headers import SecurityHeadersCheck
 from reports.reporter import MarkdownReporter
+from core.crawler import Crawler
 
 
 def main():
@@ -14,6 +15,8 @@ def main():
         base_url="http://localhost:3000/#/"
     )  # Можеш вказати будь-який тестовий URL
     policy = PolicyEngine("knowledge_base/vulnerabilities.json")
+
+    print(Crawler(target_url= client.base_url, http_client= client).crawl())
 
     # 2. Реєстрація чеків
     passive_checks = [SecurityHeadersCheck(), InformationDisclosureCheck()]
