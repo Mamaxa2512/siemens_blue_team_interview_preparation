@@ -5,6 +5,9 @@ from typing import Dict
 from urllib.parse import urljoin
 import requests
 from requests.exceptions import RequestException
+import urllib3
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 class Severity(Enum):
@@ -60,15 +63,15 @@ class HttpClient:
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": "SecurityScanner/1.0"})
 
-    def request(self, method: Method, path: str, **kwargs) -> HttpResponse:
+    def request(self, method: Method, path: str, json: dict = None, **kwargs) -> HttpResponse:
         url = urljoin(self.base_url, path)
         start_time = time.perf_counter()
 
         try:
             if method == Method.GET:
-                resp = self.session.get(url, timeout=self.timeout, **kwargs)
+                resp = self.session.get(url, timeout=self.timeout, verify=False, **kwargs)
             elif method == Method.POST:
-                resp = self.session.post(url, timeout=self.timeout, **kwargs)
+                resp = self.session.post(url, timeout=self.timeout, verify=False, json=json, **kwargs)
             else:
                 raise NotImplementedError(f"Method {method.name} is not supported")
         except RequestException as e:

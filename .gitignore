@@ -9,3 +9,11 @@ debug_crawler_deep.py
 debug_mainjs.py
 test_regex.py
 test_regex2.py
+test_rest_path.py
+debug_sqli.py
+scan_output.txt
+test_crawler_now.py
+test_crawler_now2.py
+test_http_client_post.py
+test_json_post_payload.py
+test_post_json.py

@@ -18,12 +18,11 @@ class Crawler:
 
         endpoints = set()
 
+        from urllib.parse import urljoin
         base_target = self.target_url.split('#')[0]
-        if not base_target.endswith('/'):
-            base_target += '/'
 
         for link in js_files:
-            js_path = base_target + link
+            js_path = urljoin(base_target, link)
 
             try:
                 resp = self.http_client.request(path=js_path, method=Method.GET)

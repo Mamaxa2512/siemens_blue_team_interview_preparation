@@ -87,11 +87,14 @@ class SQLiScanner:
         ]
 
         # Juice shop uses SQLite and Sequelize
-        self.error_signatures.extend(["SQLITE_ERROR", "SequelizeDatabaseError"])
+        self.error_signatures.extend(["SQLITE_ERROR", "SequelizeDatabaseError", "sequelize/lib/", "sqlite/query.js"])
         self.common_parameters = ["id", "q", "search", "query", "user", "email"]
+        self.common_json_keys = ["email", "password", "username", "id", "search", "token"]
+        self.post_endpoints_keywords = ["login", "register", "auth", "user", "profile", "basket", "checkout"]
 
     def execute(self, http_client: HttpClient, target_url: str):
         findings = []
+        # 1. Fuzz Query Parameters
         for param in self.common_parameters:
             for payload in self.payloads:
                 try:
@@ -101,23 +104,78 @@ class SQLiScanner:
                     new_query = urlencode(query_params, doseq=True)
                     test_url = urlunparse(parsed_url._replace(query=new_query))
 
-                    response = http_client.request(Method.GET, path=test_url)
-                    
-                    found = next((signature for signature in self.error_signatures if signature in response.body), None)
-                    if found:
-                        findings.append(RawFinding(
-                            vuln_id="INJ-SQLI-ERROR-BASED",
-                            endpoint= test_url,
-                            evidence=Evidence(
-                                request=f"GET {test_url}",
-                                response=found,
-                                parameters=[param],
-                            )
-                        ))
-                        # Stop fuzzing payloads for this parameter if we already found an injection
-                        break
-
+                    if self._test_url(http_client, test_url, param, findings):
+                        break  # Found injection for this parameter, stop fuzzing payloads
                 except Exception as e:
-                    logging.error(f"Error: {e} on payload: {payload}")
+                    logging.error(f"Error: {e} on payload: {payload} in query")
+
+        # 2. Fuzz Path Parameters (e.g., /rest/basket/${e}/)
+        import re
+        path_vars = re.findall(r'\$\{[^}]+\}', target_url)
+        
+        for path_var in path_vars:
+            for payload in self.payloads:
+                try:
+                    # Replace the targeted variable with payload, and others with safe defaults
+                    safe_url = target_url
+                    for other_var in path_vars:
+                        if other_var != path_var:
+                            safe_url = safe_url.replace(other_var, "1") # Safe default
+                    
+                    test_url = safe_url.replace(path_var, payload)
+                    
+                    if self._test_url(http_client, test_url, path_var, findings):
+                        break # Found injection for this path variable, stop fuzzing payloads
+                except Exception as e:
+                    logging.error(f"Error: {e} on payload: {payload} in path")
+
+        # 3. Fuzz POST JSON Body
+        is_post_target = any(keyword in target_url.lower() for keyword in self.post_endpoints_keywords)
+        if is_post_target:
+            for key in self.common_json_keys:
+                for payload in self.payloads:
+                    try:
+                        # Build a flat JSON payload
+                        json_body = {k: "test" for k in self.common_json_keys}
+                        json_body[key] = payload
+                        
+                        if self._test_post_json(http_client, target_url, json_body, key, findings):
+                            break # Found injection, stop fuzzing payloads for this key
+                    except Exception as e:
+                        logging.error(f"Error: {e} on payload: {payload} in POST JSON")
 
         return findings
+
+    def _test_post_json(self, http_client, test_url, json_body, param_name, findings_list) -> bool:
+        """Sends a POST request with JSON body and checks for SQLi signatures. Returns True if found."""
+        response = http_client.request(Method.POST, path=test_url, json=json_body)
+        found = next((signature for signature in self.error_signatures if signature in response.body), None)
+        if found:
+            findings_list.append(RawFinding(
+                vuln_id="INJ-SQLI-ERROR-BASED",
+                endpoint=test_url,
+                evidence=Evidence(
+                    request=f"POST {test_url}\n{json_body}",
+                    response=found,
+                    parameters=[param_name],
+                )
+            ))
+            return True
+        return False
+
+    def _test_url(self, http_client, test_url, param_name, findings_list) -> bool:
+        """Sends the request and checks for SQLi signatures. Returns True if found."""
+        response = http_client.request(Method.GET, path=test_url)
+        found = next((signature for signature in self.error_signatures if signature in response.body), None)
+        if found:
+            findings_list.append(RawFinding(
+                vuln_id="INJ-SQLI-ERROR-BASED",
+                endpoint=test_url,
+                evidence=Evidence(
+                    request=f"GET {test_url}",
+                    response=found,
+                    parameters=[param_name],
+                )
+            ))
+            return True
+        return False
