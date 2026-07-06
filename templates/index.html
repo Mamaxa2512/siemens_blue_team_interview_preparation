@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automated Attack Surface Analyzer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Load FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="background-blob blob-1"></div>
+    <div class="background-blob blob-2"></div>
+
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fa-solid fa-shield-halved"></i>
+                <h1>Antigravity <span>DAST</span></h1>
+            </div>
+            <p>Automated Attack Surface Analyzer</p>
+        </header>
+
+        <main>
+            <!-- Control Panel -->
+            <section class="glass-panel control-panel">
+                <h2>New Scan</h2>
+                <div class="input-group">
+                    <input type="url" id="targetUrl" placeholder="Enter target URL (e.g. http://localhost:3000)" required>
+                    <button id="scanBtn" class="btn-primary">
+                        <i class="fa-solid fa-bolt"></i> Launch Scan
+                    </button>
+                </div>
+            </section>
+
+            <!-- Status Panel -->
+            <section class="glass-panel status-panel" id="statusPanel" style="display: none;">
+                <div class="status-header">
+                    <h2>Scan Status</h2>
+                    <span class="badge badge-scanning" id="statusBadge">Scanning</span>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-bar-indeterminate" id="progressBar"></div>
+                </div>
+                
+                <p id="statusText">Initiating crawl on target...</p>
+            </section>
+
+            <!-- Results Dashboard -->
+            <section class="glass-panel results-panel" id="resultsPanel" style="display: none;">
+                <h2>Scan Results <span class="badge" id="vulnCountBadge">0 Found</span></h2>
+                
+                <!-- Quick Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card critical">
+                        <h3>Critical</h3>
+                        <div class="stat-value" id="statCritical">0</div>
+                    </div>
+                    <div class="stat-card high">
+                        <h3>High</h3>
+                        <div class="stat-value" id="statHigh">0</div>
+                    </div>
+                    <div class="stat-card medium">
+                        <h3>Medium</h3>
+                        <div class="stat-value" id="statMedium">0</div>
+                    </div>
+                    <div class="stat-card low">
+                        <h3>Low</h3>
+                        <div class="stat-value" id="statLow">0</div>
+                    </div>
+                </div>
+
+                <!-- Vulnerability Table -->
+                <div class="table-responsive">
+                    <table class="vuln-table">
+                        <thead>
+                            <tr>
+                                <th>Severity</th>
+                                <th>Vulnerability Name</th>
+                                <th>Target Endpoint</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vulnTableBody">
+                            <!-- Rows injected via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <p>Antigravity Engine v1.0. Unauthorized scanning is strictly prohibited.</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
