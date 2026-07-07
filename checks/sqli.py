@@ -88,17 +88,20 @@ class SQLiScanner:
 
         # Juice shop uses SQLite and Sequelize
         self.error_signatures.extend(["SQLITE_ERROR", "SequelizeDatabaseError", "sequelize/lib/", "sqlite/query.js"])
-        self.common_parameters = ["id", "q", "search", "query", "user", "email"]
+        self.common_parameters = ["id", "cat", "artist", "q", "search", "query", "user", "email"]
         self.common_json_keys = ["email", "password", "username", "id", "search", "token"]
         self.post_endpoints_keywords = ["login", "register", "auth", "user", "profile", "basket", "checkout"]
 
     async def execute(self, http_client: HttpClient, target_url: str):
         findings = []
         # 1. Fuzz Query Parameters
-        for param in self.common_parameters:
+        parsed_url = urlparse(target_url)
+        original_query_params = parse_qs(parsed_url.query)
+        params_to_test = list(original_query_params) or self.common_parameters
+
+        for param in params_to_test:
             for payload in self.payloads:
                 try:
-                    parsed_url = urlparse(target_url)
                     query_params = parse_qs(parsed_url.query)
                     query_params[param] = [payload]
                     new_query = urlencode(query_params, doseq=True)

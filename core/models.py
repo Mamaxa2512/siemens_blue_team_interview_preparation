@@ -5,9 +5,7 @@ from typing import Dict
 from urllib.parse import urljoin
 import aiohttp
 import asyncio
-import urllib3
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+import logging
 
 
 class Severity(Enum):
@@ -57,7 +55,7 @@ class Method(Enum):
 
 
 class HttpClient:
-    def __init__(self, base_url: str, timeout: int = 10):
+    def __init__(self, base_url: str, timeout: int = 8):
         self.base_url = base_url
         self.timeout_sec = timeout
         self.session = None
@@ -65,8 +63,13 @@ class HttpClient:
 
     async def get_session(self):
         if self.session is None or self.session.closed:
-            timeout = aiohttp.ClientTimeout(total=self.timeout_sec)
-            connector = aiohttp.TCPConnector(ssl=False)
+            timeout = aiohttp.ClientTimeout(
+                total=self.timeout_sec,
+                connect=self.timeout_sec,
+                sock_connect=self.timeout_sec,
+                sock_read=self.timeout_sec,
+            )
+            connector = aiohttp.TCPConnector(ssl=False, limit_per_host=10)
             self.session = aiohttp.ClientSession(
                 timeout=timeout,
                 headers=self.headers,
@@ -82,6 +85,8 @@ class HttpClient:
         url = urljoin(self.base_url, path)
         start_time = time.perf_counter()
         session = await self.get_session()
+        
+        logging.debug(f"[HTTP] -> {method.name} {url}")
 
         try:
             if method == Method.GET:
@@ -96,11 +101,17 @@ class HttpClient:
                     headers = dict(resp.headers)
             else:
                 raise NotImplementedError(f"Method {method.name} is not supported")
+        except asyncio.TimeoutError as e:
+            logging.error(f"[HTTP] Timeout {method.name} {url}: {e}")
+            raise RuntimeError(f"Timeout during request to {url}") from e
         except aiohttp.ClientError as e:
-            raise RuntimeError(f"Network error during request to {url}: {e}")
+            logging.error(f"[HTTP] Error {method.name} {url}: {e}")
+            raise RuntimeError(f"Network error during request to {url}: {e}") from e
 
         end_time = time.perf_counter()
         time_ms = int((end_time - start_time) * 1000)
+        
+        logging.debug(f"[HTTP] <- {status_code} {url} ({time_ms}ms) | Body: {len(body)} bytes")
 
         return HttpResponse(
             code=status_code,

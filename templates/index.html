@@ -32,6 +32,17 @@
                         <i class="fa-solid fa-bolt"></i> Launch Scan
                     </button>
                 </div>
+                <!-- Advanced settings -->
+                <div class="advanced-settings" style="margin-top: 1rem; display: flex; gap: 1rem; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px;">
+                    <div style="flex: 1;">
+                        <label for="timeoutInput" style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.3rem;">Network Timeout (seconds)</label>
+                        <input type="number" id="timeoutInput" value="15" min="1" max="60" style="width: 100%; background: transparent; border: 1px solid var(--panel-border); border-radius: 4px; padding: 0.5rem; color: var(--text-main); font-family: 'Inter', sans-serif;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label for="concurrencyInput" style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.3rem;">Max Concurrent Requests</label>
+                        <input type="number" id="concurrencyInput" value="3" min="1" max="100" style="width: 100%; background: transparent; border: 1px solid var(--panel-border); border-radius: 4px; padding: 0.5rem; color: var(--text-main); font-family: 'Inter', sans-serif;">
+                    </div>
+                </div>
             </section>
 
             <!-- Status Panel -->
@@ -50,7 +61,12 @@
 
             <!-- Results Dashboard -->
             <section class="glass-panel results-panel" id="resultsPanel" style="display: none;">
-                <h2>Scan Results <span class="badge" id="vulnCountBadge">0 Found</span></h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h2 style="margin-bottom: 0;">Scan Results <span class="badge" id="vulnCountBadge">0 Found</span></h2>
+                    <a href="/api/scan/download/csv" class="btn-primary" style="text-decoration: none; font-size: 0.9rem; padding: 0.6rem 1.2rem;">
+                        <i class="fa-solid fa-file-csv"></i> Download CSV
+                    </a>
+                </div>
                 
                 <!-- Quick Stats -->
                 <div class="stats-grid">

@@ -82,5 +82,19 @@
     "description": "SQL Injection allowed bypassing authentication and receiving a valid session token.",
     "impact": "Attackers can completely bypass the login mechanism and gain unauthorized access to user or administrative accounts.",
     "remediation": "Implement parameterized queries (Prepared Statements) for all authentication logic. Do not concatenate user input directly into SQL statements."
+  },
+  "WAF-DETECTED": {
+    "name": "Web Application Firewall (WAF) Detected",
+    "severity": "LOW",
+    "description": "Indicates that the target site is protected by a Web Application Firewall (e.g. Cloudflare, AWS WAF, Sucuri), which may block further scanning.",
+    "impact": "Makes exploitation of vulnerabilities and automated scanning more difficult.",
+    "remediation": "N/A - This is an informational finding indicating the presence of defensive measures."
+  },
+  "WAF-MISSING": {
+    "name": "Missing Web Application Firewall (WAF)",
+    "severity": "CRITICAL",
+    "description": "No Web Application Firewall was detected. Malicious requests are processed directly by the application server.",
+    "impact": "The application is exposed to direct attacks, lacking a defense-in-depth layer against common web exploits and automated bots.",
+    "remediation": "Consider implementing a WAF (e.g., Cloudflare, AWS WAF) to protect against common attacks and reduce the load on application servers."
   }
 }

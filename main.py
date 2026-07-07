@@ -1,9 +1,11 @@
 import asyncio
+import logging
 from orchestrator import ScannerOrchestrator
 from reports.reporter import MarkdownReporter
 
 async def main():
-    base_url = "https://demo.owasp-juice.shop/"
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+    base_url = "https://preview.owasp-juice.shop"
     orchestrator = ScannerOrchestrator(target_url=base_url)
     
     print(f"[*] Starting scan against {base_url}...")

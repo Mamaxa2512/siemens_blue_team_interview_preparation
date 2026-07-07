@@ -1,7 +1,10 @@
-from flask import Flask, request, jsonify, render_template
+import asyncio
+from flask import Flask, request, jsonify, render_template, Response
 import threading
 from orchestrator import ScannerOrchestrator
 import time
+import csv
+from io import StringIO
 
 app = Flask(__name__)
 
@@ -9,18 +12,22 @@ app = Flask(__name__)
 scan_status = {
     "status": "idle", # idle, scanning, completed, error
     "results": [],
-    "target": ""
+    "target": "",
+    "started_at": None,
 }
 
-def background_scan(target_url):
+def background_scan(target_url, timeout=15, max_concurrent=3):
     global scan_status
     scan_status["status"] = "scanning"
     scan_status["target"] = target_url
     scan_status["results"] = []
+    scan_status["error_message"] = ""
+    scan_status["started_at"] = time.time()
     
     try:
-        orchestrator = ScannerOrchestrator(target_url=target_url)
-        results = orchestrator.run_scan()
+        orchestrator = ScannerOrchestrator(target_url=target_url, timeout=timeout, max_concurrent=max_concurrent)
+        # Keep the demo UI from polling forever when a target stops responding.
+        results = asyncio.run(asyncio.wait_for(orchestrator.run_scan(), timeout=600))
         
         # Convert findings to dicts for JSON
         results_json = []
@@ -55,6 +62,8 @@ def start_scan():
     global scan_status
     data = request.json
     target_url = data.get('target_url')
+    timeout = int(data.get('timeout', 15))
+    max_concurrent = int(data.get('max_concurrent', 3))
     
     if not target_url:
         return jsonify({"error": "No target URL provided"}), 400
@@ -62,7 +71,7 @@ def start_scan():
     if scan_status["status"] == "scanning":
         return jsonify({"error": "A scan is already in progress"}), 400
         
-    thread = threading.Thread(target=background_scan, args=(target_url,))
+    thread = threading.Thread(target=background_scan, args=(target_url, timeout, max_concurrent), daemon=True)
     thread.start()
     
     return jsonify({"message": "Scan started"}), 200
@@ -71,6 +80,25 @@ def start_scan():
 def get_status():
     global scan_status
     return jsonify(scan_status)
+
+@app.route('/api/scan/download/csv', methods=['GET'])
+def download_csv():
+    global scan_status
+    if scan_status["status"] != "completed" or not scan_status["results"]:
+        return "No results available", 400
+        
+    si = StringIO()
+    cw = csv.writer(si)
+    cw.writerow(['Severity', 'Vulnerability Name', 'Endpoint', 'Description'])
+    for r in scan_status["results"]:
+        cw.writerow([r['severity'], r['name'], r['endpoint'], r['description']])
+        
+    output = si.getvalue()
+    return Response(
+        output,
+        mimetype="text/csv",
+        headers={"Content-disposition": "attachment; filename=echo_scan_report.csv"}
+    )
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

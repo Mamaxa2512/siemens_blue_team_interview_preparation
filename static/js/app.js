@@ -20,6 +20,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     scanBtn.addEventListener('click', async () => {
         const url = targetUrlInput.value.trim();
+        const timeout = parseInt(document.getElementById('timeoutInput').value) || 15;
+        const concurrency = parseInt(document.getElementById('concurrencyInput').value) || 3;
+        
         if (!url) {
             alert("Please enter a valid URL.");
             return;
@@ -41,7 +44,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/api/scan/start', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ target_url: url })
+                body: JSON.stringify({ 
+                    target_url: url,
+                    timeout: timeout,
+                    max_concurrent: concurrency
+                })
             });
 
             if (!response.ok) {
