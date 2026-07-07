@@ -15,13 +15,13 @@ class Discovery:
             ".venv",
         ]
 
-    def execute(self, http_client: HttpClient, target_url: str) -> List[RawFinding]:
+    async def execute(self, http_client: HttpClient, target_url: str) -> List[RawFinding]:
         findings = []
         if not target_url.endswith("/"):
             target_url += "/"
         for word in self.wordlist:
             try:
-                response = http_client.request(
+                response = await http_client.request(
                     method=Method.GET, path=target_url + word
                 )
                 if 200 <= response.code < 300:

@@ -8,8 +8,8 @@ class Crawler:
         self.target_url = target_url
         self.http_client = http_client
 
-    def crawl(self):
-        response = self.http_client.request(path = self.target_url, method=Method.GET)
+    async def crawl(self):
+        response = await self.http_client.request(path = self.target_url, method=Method.GET)
         links = re.findall(r'href=[\'"]?([^\'" >]+)', response.body)
         scripts = re.findall(r'src=[\'"]?([^\'" >]+\.js)', response.body)
         links.extend(scripts)
@@ -25,7 +25,7 @@ class Crawler:
             js_path = urljoin(base_target, link)
 
             try:
-                resp = self.http_client.request(path=js_path, method=Method.GET)
+                resp = await self.http_client.request(path=js_path, method=Method.GET)
                 found_apis = re.findall(r'(/api/[^\'" >`\?]+|/rest/[^\'" >`\?]+)', resp.body)
                 endpoints.update(found_apis)
             except Exception as e:

@@ -92,7 +92,7 @@ class SQLiScanner:
         self.common_json_keys = ["email", "password", "username", "id", "search", "token"]
         self.post_endpoints_keywords = ["login", "register", "auth", "user", "profile", "basket", "checkout"]
 
-    def execute(self, http_client: HttpClient, target_url: str):
+    async def execute(self, http_client: HttpClient, target_url: str):
         findings = []
         # 1. Fuzz Query Parameters
         for param in self.common_parameters:
@@ -104,7 +104,7 @@ class SQLiScanner:
                     new_query = urlencode(query_params, doseq=True)
                     test_url = urlunparse(parsed_url._replace(query=new_query))
 
-                    if self._test_url(http_client, test_url, param, findings):
+                    if await self._test_url(http_client, test_url, param, findings):
                         break  # Found injection for this parameter, stop fuzzing payloads
                 except Exception as e:
                     logging.error(f"Error: {e} on payload: {payload} in query")
@@ -124,7 +124,7 @@ class SQLiScanner:
                     
                     test_url = safe_url.replace(path_var, payload)
                     
-                    if self._test_url(http_client, test_url, path_var, findings):
+                    if await self._test_url(http_client, test_url, path_var, findings):
                         break # Found injection for this path variable, stop fuzzing payloads
                 except Exception as e:
                     logging.error(f"Error: {e} on payload: {payload} in path")
@@ -139,21 +139,21 @@ class SQLiScanner:
                         json_body = {k: "test" for k in self.common_json_keys}
                         json_body[key] = payload
                         
-                        if self._test_post_json(http_client, target_url, json_body, key, findings):
+                        if await self._test_post_json(http_client, target_url, json_body, key, findings):
                             break # Found injection, stop fuzzing payloads for this key
                     except Exception as e:
                         logging.error(f"Error: {e} on payload: {payload} in POST JSON")
 
         return findings
 
-    def _test_post_json(self, http_client, test_url, json_body, param_name, findings_list) -> bool:
+    async def _test_post_json(self, http_client, test_url, json_body, param_name, findings_list) -> bool:
         """Sends a POST request with JSON body and checks for SQLi signatures. Returns True if found."""
-        response = http_client.request(Method.POST, path=test_url, json=json_body)
+        response = await http_client.request(Method.POST, path=test_url, json=json_body)
         found = next((signature for signature in self.error_signatures if signature in response.body), None)
         if found:
             # We found an error. Now let's try to exploit it if it's a login endpoint.
             if "login" in test_url.lower():
-                if self._attempt_auth_bypass_poc(http_client, test_url, findings_list):
+                if await self._attempt_auth_bypass_poc(http_client, test_url, findings_list):
                     return True # Successfully exploited, no need to log the error-based one
                     
             findings_list.append(RawFinding(
@@ -168,9 +168,9 @@ class SQLiScanner:
             return True
         return False
 
-    def _test_url(self, http_client, test_url, param_name, findings_list) -> bool:
+    async def _test_url(self, http_client, test_url, param_name, findings_list) -> bool:
         """Sends the request and checks for SQLi signatures. Returns True if found."""
-        response = http_client.request(Method.GET, path=test_url)
+        response = await http_client.request(Method.GET, path=test_url)
         found = next((signature for signature in self.error_signatures if signature in response.body), None)
         if found:
             findings_list.append(RawFinding(
@@ -185,7 +185,7 @@ class SQLiScanner:
             return True
         return False
         
-    def _attempt_auth_bypass_poc(self, http_client, test_url, findings_list) -> bool:
+    async def _attempt_auth_bypass_poc(self, http_client, test_url, findings_list) -> bool:
         """Attempts an active Authentication Bypass using common SQLi payloads."""
         bypass_payloads = [
             "'--",
@@ -200,7 +200,7 @@ class SQLiScanner:
                 "password": "a"
             }
             try:
-                response = http_client.request(Method.POST, path=test_url, json=json_body)
+                response = await http_client.request(Method.POST, path=test_url, json=json_body)
                 
                 # Check if we bypassed auth (HTTP 200 and 'token' in response)
                 if response.code == 200 and "token" in response.body.lower():

@@ -1,3 +1,4 @@
+import asyncio
 from checks.disclosure import InformationDisclosureCheck
 from checks.discovery import Discovery
 from checks.sqli import SQLiScanner
@@ -26,17 +27,35 @@ class ScannerOrchestrator:
             endpoint_checks=self.endpoint_checks,
         )
 
-    def run_scan(self):
-        # Crawl from the root rather than /#/ to find all JS files
-        endpoints = Crawler(target_url="/", http_client=self.client).crawl()
-        endpoints.add("/")
-        
-        all_results = []
-        for url in endpoints:
-            results = self.scanner.run_endpoint_checks(target_url=url)
-            all_results.extend(results)
+    async def run_scan(self):
+        try:
+            # Crawl from the root rather than /#/ to find all JS files
+            endpoints = await Crawler(target_url="/", http_client=self.client).crawl()
+            endpoints.add("/")
+            
+            all_results = []
+            
+            # Use Semaphore to limit concurrent endpoint scans
+            semaphore = asyncio.Semaphore(10)
+            
+            async def scan_endpoint(url):
+                async with semaphore:
+                    return await self.scanner.run_endpoint_checks(target_url=url)
 
-        all_results.extend(self.scanner.run_global_checks(target_url=self.target_url))
-        all_results.extend(self.scanner.run_passive(target_url=self.target_url))
-        
-        return all_results
+            endpoint_tasks = [scan_endpoint(url) for url in endpoints]
+            endpoint_results = await asyncio.gather(*endpoint_tasks)
+            
+            for res in endpoint_results:
+                all_results.extend(res)
+
+            global_results, passive_results = await asyncio.gather(
+                self.scanner.run_global_checks(target_url=self.target_url),
+                self.scanner.run_passive(target_url=self.target_url)
+            )
+            
+            all_results.extend(global_results)
+            all_results.extend(passive_results)
+            
+            return all_results
+        finally:
+            await self.client.close()

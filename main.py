@@ -1,12 +1,13 @@
+import asyncio
 from orchestrator import ScannerOrchestrator
 from reports.reporter import MarkdownReporter
 
-def main():
-    base_url = "http://localhost:3000"
+async def main():
+    base_url = "https://demo.owasp-juice.shop/"
     orchestrator = ScannerOrchestrator(target_url=base_url)
     
     print(f"[*] Starting scan against {base_url}...")
-    all_results = orchestrator.run_scan()
+    all_results = await orchestrator.run_scan()
 
     print("====================================")
     print(f"Vulnerabilities found: {len(all_results)}")
@@ -20,4 +21,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

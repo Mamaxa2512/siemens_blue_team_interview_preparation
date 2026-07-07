@@ -4,7 +4,7 @@ from core.models import HttpResponse, RawFinding, Evidence
 
 
 class InformationDisclosureCheck:
-    def execute(self, response: HttpResponse) -> List[RawFinding]:
+    async def execute(self, response: HttpResponse) -> List[RawFinding]:
         findings = []
         headers_lower = {k.lower(): v for k, v in response.headers.items()}
 

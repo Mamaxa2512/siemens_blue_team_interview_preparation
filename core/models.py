@@ -3,8 +3,8 @@ import time
 from enum import Enum
 from typing import Dict
 from urllib.parse import urljoin
-import requests
-from requests.exceptions import RequestException
+import aiohttp
+import asyncio
 import urllib3
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -59,31 +59,53 @@ class Method(Enum):
 class HttpClient:
     def __init__(self, base_url: str, timeout: int = 10):
         self.base_url = base_url
-        self.timeout = timeout
-        self.session = requests.Session()
-        self.session.headers.update({"User-Agent": "SecurityScanner/1.0"})
+        self.timeout_sec = timeout
+        self.session = None
+        self.headers = {"User-Agent": "SecurityScanner/1.0"}
 
-    def request(self, method: Method, path: str, json: dict = None, **kwargs) -> HttpResponse:
+    async def get_session(self):
+        if self.session is None or self.session.closed:
+            timeout = aiohttp.ClientTimeout(total=self.timeout_sec)
+            connector = aiohttp.TCPConnector(ssl=False)
+            self.session = aiohttp.ClientSession(
+                timeout=timeout,
+                headers=self.headers,
+                connector=connector
+            )
+        return self.session
+
+    async def close(self):
+        if self.session and not self.session.closed:
+            await self.session.close()
+
+    async def request(self, method: Method, path: str, json: dict = None, **kwargs) -> HttpResponse:
         url = urljoin(self.base_url, path)
         start_time = time.perf_counter()
+        session = await self.get_session()
 
         try:
             if method == Method.GET:
-                resp = self.session.get(url, timeout=self.timeout, verify=False, **kwargs)
+                async with session.get(url, **kwargs) as resp:
+                    body = await resp.text()
+                    status_code = resp.status
+                    headers = dict(resp.headers)
             elif method == Method.POST:
-                resp = self.session.post(url, timeout=self.timeout, verify=False, json=json, **kwargs)
+                async with session.post(url, json=json, **kwargs) as resp:
+                    body = await resp.text()
+                    status_code = resp.status
+                    headers = dict(resp.headers)
             else:
                 raise NotImplementedError(f"Method {method.name} is not supported")
-        except RequestException as e:
+        except aiohttp.ClientError as e:
             raise RuntimeError(f"Network error during request to {url}: {e}")
 
         end_time = time.perf_counter()
         time_ms = int((end_time - start_time) * 1000)
 
         return HttpResponse(
-            code=resp.status_code,
-            body=resp.text,
-            headers=dict(resp.headers),
+            code=status_code,
+            body=body,
+            headers=headers,
             time_ms=time_ms,
             path=url,
         )
