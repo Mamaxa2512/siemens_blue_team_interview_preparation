@@ -25,11 +25,18 @@ def background_scan(target_url):
         # Convert findings to dicts for JSON
         results_json = []
         for r in results:
+            evidence_data = None
+            if r.evidence:
+                evidence_data = {
+                    "request": r.evidence.request,
+                    "response": r.evidence.response
+                }
             results_json.append({
                 "name": r.name,
                 "severity": r.severity.name,
                 "endpoint": r.endpoint,
-                "description": r.description
+                "description": r.description,
+                "evidence": evidence_data
             })
             
         scan_status["results"] = results_json

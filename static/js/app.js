@@ -104,6 +104,15 @@ document.addEventListener('DOMContentLoaded', () => {
         
         vulnTableBody.innerHTML = '';
         
+        function escapeHtml(unsafe) {
+            return (unsafe || '').toString()
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+        }
+
         results.forEach(finding => {
             if (finding.severity === 'CRITICAL') critical++;
             else if (finding.severity === 'HIGH') high++;
@@ -111,12 +120,34 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (finding.severity === 'LOW') low++;
 
             const tr = document.createElement('tr');
+            let detailsBtn = '';
+            if (finding.evidence) {
+                detailsBtn = `<button class="btn-evidence" onclick="this.closest('tr').nextElementSibling.classList.toggle('hidden')"><i class="fa-solid fa-eye"></i> View Evidence</button>`;
+            }
+            
             tr.innerHTML = `
                 <td><span class="tag ${finding.severity}">${finding.severity}</span></td>
                 <td><strong>${finding.name}</strong><br><small style="color:var(--text-muted)">${finding.description}</small></td>
                 <td><div class="code-endpoint">${finding.endpoint}</div></td>
+                <td>${detailsBtn}</td>
             `;
             vulnTableBody.appendChild(tr);
+
+            if (finding.evidence) {
+                const trEv = document.createElement('tr');
+                trEv.className = 'hidden evidence-row';
+                trEv.innerHTML = `
+                    <td colspan="4">
+                        <div class="evidence-box">
+                            <h4>Request</h4>
+                            <pre>${escapeHtml(finding.evidence.request)}</pre>
+                            <h4>Response Match</h4>
+                            <pre>${escapeHtml(finding.evidence.response)}</pre>
+                        </div>
+                    </td>
+                `;
+                vulnTableBody.appendChild(trEv);
+            }
         });
 
         // Update Stat Cards

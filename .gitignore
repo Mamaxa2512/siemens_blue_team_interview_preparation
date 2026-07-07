@@ -17,3 +17,6 @@ test_crawler_now2.py
 test_http_client_post.py
 test_json_post_payload.py
 test_post_json.py
+test_crawler_new.py
+poc_sqli.py
+poc_sqli2.py

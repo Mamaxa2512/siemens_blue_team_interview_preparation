@@ -355,6 +355,52 @@ input[type="url"]:focus {
 .tag.MEDIUM { background: var(--medium-bg); color: var(--medium-color); border: 1px solid rgba(234, 179, 8, 0.3); }
 .tag.LOW { background: var(--low-bg); color: var(--low-color); border: 1px solid rgba(59, 130, 246, 0.3); }
 
+.btn-evidence {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-evidence:hover {
+    background: var(--accent);
+    color: white;
+}
+
+.hidden {
+    display: none;
+}
+
+.evidence-box {
+    background: rgba(0, 0, 0, 0.4);
+    border-left: 3px solid var(--accent);
+    padding: 1rem;
+    margin: 0.5rem 0;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: #e2e8f0;
+    overflow-x: auto;
+}
+
+.evidence-box h4 {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    margin-bottom: 0.3rem;
+    margin-top: 0.8rem;
+}
+.evidence-box h4:first-child { margin-top: 0; }
+
+.evidence-box pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
 footer {
     text-align: center;
     color: var(--text-muted);

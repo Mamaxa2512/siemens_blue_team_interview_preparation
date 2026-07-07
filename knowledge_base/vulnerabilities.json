@@ -75,5 +75,12 @@
     "description": "The application is vulnerable to Error-Based SQL Injection. It returns detailed database error messages in the HTTP response when unexpected SQL syntax is supplied.",
     "impact": "Attackers can exploit this to extract sensitive data from the database, enumerate the database structure, or potentially compromise the underlying server.",
     "remediation": "Implement parameterized queries (Prepared Statements) for all database interactions. Ensure detailed database error messages are disabled in production environments and generic error messages are returned instead."
+  },
+  "INJ-SQLI-AUTH-BYPASS": {
+    "name": "Authentication Bypass via SQL Injection",
+    "severity": "CRITICAL",
+    "description": "SQL Injection allowed bypassing authentication and receiving a valid session token.",
+    "impact": "Attackers can completely bypass the login mechanism and gain unauthorized access to user or administrative accounts.",
+    "remediation": "Implement parameterized queries (Prepared Statements) for all authentication logic. Do not concatenate user input directly into SQL statements."
   }
 }

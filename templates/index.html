@@ -17,14 +17,14 @@
         <header>
             <div class="logo">
                 <i class="fa-solid fa-shield-halved"></i>
-                <h1>Antigravity <span>DAST</span></h1>
+                <h1>Echo <span>Scanner</span></h1>
             </div>
             <p>Automated Attack Surface Analyzer</p>
         </header>
 
         <main>
             <!-- Control Panel -->
-            <section class="glass-panel control-panel">
+            <section class="glass-panel control-panel" style="margin-bottom: 2rem;">
                 <h2>New Scan</h2>
                 <div class="input-group">
                     <input type="url" id="targetUrl" placeholder="Enter target URL (e.g. http://localhost:3000)" required>
@@ -35,7 +35,7 @@
             </section>
 
             <!-- Status Panel -->
-            <section class="glass-panel status-panel" id="statusPanel" style="display: none;">
+            <section class="glass-panel status-panel" id="statusPanel" style="display: none; margin-bottom: 2rem;">
                 <div class="status-header">
                     <h2>Scan Status</h2>
                     <span class="badge badge-scanning" id="statusBadge">Scanning</span>
@@ -80,6 +80,7 @@
                                 <th>Severity</th>
                                 <th>Vulnerability Name</th>
                                 <th>Target Endpoint</th>
+                                <th>Details</th>
                             </tr>
                         </thead>
                         <tbody id="vulnTableBody">
@@ -91,7 +92,7 @@
         </main>
         
         <footer>
-            <p>Antigravity Engine v1.0. Unauthorized scanning is strictly prohibited.</p>
+            <p>Echo Engine v1.0. Unauthorized scanning is strictly prohibited.</p>
         </footer>
     </div>
 
